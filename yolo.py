@@ -4,7 +4,7 @@ Class definition of YOLO_v3 style detection model on image and video
 """
 
 import colorsys
-import os
+import os, glob
 from timeit import default_timer as timer
 
 import numpy as np
@@ -17,6 +17,8 @@ from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 import os
 from keras.utils import multi_gpu_model
+
+import cv2
 
 class YOLO(object):
     _defaults = {
@@ -164,7 +166,7 @@ class YOLO(object):
 
         end = timer()
         print(end - start)
-        return image
+        return image, out_boxes, out_scores, out_classes
 
     def close_session(self):
         self.sess.close()
@@ -189,7 +191,7 @@ def detect_video(yolo, video_path, output_path=""):
     while True:
         return_value, frame = vid.read()
         image = Image.fromarray(frame)
-        image = yolo.detect_image(image)
+        image, _, _, _ = yolo.detect_image(image)
         result = np.asarray(image)
         curr_time = timer()
         exec_time = curr_time - prev_time
@@ -210,3 +212,16 @@ def detect_video(yolo, video_path, output_path=""):
             break
     yolo.close_session()
 
+def main(yolo):
+    imgs = glob.glob('../data/in/*')
+    for img in imgs:
+        image = Image.open(img)
+        r_image, out_boxes, out_scores, out_classes = yolo.detect_image(image)
+        print(type(r_image))
+        print((out_boxes, out_scores, out_classes))
+        cv2.imwrite("../data/out/" + os.path.basename(img), np.asarray(r_image)[..., ::-1])
+        r_image.show()
+    yolo.close_session()
+
+if __name__ == '__main__':
+    main(YOLO())
