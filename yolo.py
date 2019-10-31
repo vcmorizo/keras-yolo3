@@ -218,7 +218,7 @@ def main(yolo):
         image = Image.open(img)
         r_image, out_boxes, out_scores, out_classes = yolo.detect_image(image)
         print(type(r_image))
-        print((out_boxes, out_scores, out_classes))
+        print(yolo.boxes, yolo.scores, yolo.classes)
         cv2.imwrite("../data/out/" + os.path.basename(img), np.asarray(r_image)[..., ::-1])
         r_image.show()
     yolo.close_session()
